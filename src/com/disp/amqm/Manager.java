@@ -9,12 +9,14 @@ package com.disp.amqm;
 public class Manager {
  
     public static void main(String[] args) throws Exception {
-        //thread(new Producer(), false);
+        thread(new Producer(), false);
+        thread(new Consumer(), false);
         thread(new Consumer(), false);
         Thread.sleep(1000);
     }
     /**
      * this method make my manager as a daemon 
+     * 	allows us to create multiple instance of consumers 
      * @param runnable
      * @param daemon
      * @author Rami

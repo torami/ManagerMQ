@@ -44,15 +44,12 @@ public class CamelJdbcPollingScénario {
 							Map<String, Object> signalement = exchange.getIn().getBody(Map.class);
 							System.out.println("Process signalement " + signalement);
 							 // send to default destination 
-						    jmsMessageSender.send(signalement);
-						         
-						   
-						         
-						   
-						    System.out.print(signalement.get("firstname")+"aaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+						    jmsMessageSender.send(signalement); 
+						   // debug 
+						         //	System.out.print(signalement.get("firstname")+"aaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 						    // send to a code specified destination
-						    Queue queue = new ActiveMQQueue("AnotherDest");
-						    jmsMessageSender.send(queue, "hello Another Message");
+//						    Queue queue = new ActiveMQQueue("AnotherDest");
+//						    jmsMessageSender.send(queue, "hello Another Message");
 						   
 						    // close spring application context
 						    ((ClassPathXmlApplicationContext)ctx).close();

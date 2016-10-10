@@ -16,7 +16,7 @@ public class SignalementJDBCTemplate implements SignalementDAO {
    }
 
    public void create(int id, String importance, String object,String description,String comment,String place,int idreporter) {
-      String SQL = "insert into Signalement (id, importance, object, description, comment, place, idreporter) values (?, ?, ?, ?, ?, ?, ?)";
+      String SQL = "insert into signalement (id, importance, object, description, comment, place, idperson) values (?, ?, ?, ?, ?, ?, ?)";
       
       jdbcTemplateObject.update( SQL, id,importance,object,description,comment,place,idreporter);
       System.out.println("Created Record ID = "+id+"#importance ="+importance+"#object ="+
@@ -25,21 +25,21 @@ public class SignalementJDBCTemplate implements SignalementDAO {
    }
 
    public Signalement getSignalement(Integer id) {
-      String SQL = "select * from Signalement where id = ?";
+      String SQL = "select * from signalement where id = ?";
       Signalement signalement = jdbcTemplateObject.queryForObject(SQL, 
                         new Object[]{id}, new SignalementMapper());
       return signalement;
    }
 
    public List<Signalement> listSignalements() {
-      String SQL = "select * from Signalement";
+      String SQL = "select * from signalement";
       List <Signalement> signalements = jdbcTemplateObject.query(SQL, 
                                 new SignalementMapper());
       return signalements;
    }
 
    public void delete(Integer id){
-      String SQL = "delete from Signalement where id = ?";
+      String SQL = "delete from signalement where id = ?";
       jdbcTemplateObject.update(SQL, id);
       System.out.println("Deleted Record with ID = " + id );
       return;

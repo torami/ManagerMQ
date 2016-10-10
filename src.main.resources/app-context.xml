@@ -34,7 +34,7 @@
   <!-- Default Destination Queue Definition -->
   <bean id="defaultDestination" class="org.apache.activemq.command.ActiveMQQueue">
     <!-- name of the queue -->
-    <constructor-arg index="0" value="Person" />
+    <constructor-arg index="0" value="Signalement" />
   </bean>
  
   <!-- JmsTemplate Definition -->
