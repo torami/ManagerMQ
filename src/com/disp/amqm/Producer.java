@@ -1,49 +1,91 @@
 package com.disp.amqm;
 
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import java.util.Map;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
+import javax.sql.DataSource;
+
+import java.util.Map;
+
+import javax.jms.Queue;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
+import org.apache.activemq.command.ActiveMQQueue;
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.util.jndi.JndiContext;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+
+
+
+
+
+import com.disp.messageprocessing.JmsMessageSender;
 
 public class Producer implements Runnable {
     public void run() {
-        try {
-            // Create a ConnectionFactory
-            ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616");
-
-            // Create a Connection
-            Connection connection = connectionFactory.createConnection();
-            connection.start();
-
-            // Create a Session
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-            // Create the destination (Topic or Queue)
-            Destination destination = session.createQueue("Signalement");
-
-            // Create a MessageProducer from the Session to the Topic or Queue
-            MessageProducer producer = session.createProducer(destination);
-            producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-
-            // Create a messages
-            String text = "Hello world! From: " + Thread.currentThread().getName() + " : " + this.hashCode();
-            TextMessage message = session.createTextMessage(text);
-
-            // Tell the producer to send the message
-            System.out.println("Sent message: "+ message.hashCode() + " : " + Thread.currentThread().getName());
-            producer.send(message);
-
-            // Clean up
-            session.close();
-            connection.close();
-        }
-        catch (Exception e) {
-            System.out.println("Caught: " + e);
-            e.printStackTrace();
-        }
+	    // init spring context
+	    ApplicationContext ctx = new ClassPathXmlApplicationContext("app-context.xml");
+	    // get bean from context
+	    JmsMessageSender jmsMessageSender = (JmsMessageSender)ctx.getBean("jmsMessageSender");
+		ConfigurableApplicationContext context = new ClassPathXmlApplicationContext("dataSourceApplicationContext.xml");
+		DataSource dataSource = (DataSource) context.getBean("dataSource");
+		JndiContext jndiContext = null;
+		try {
+			jndiContext = new JndiContext();
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			jndiContext.bind("dataSource", dataSource);
+		} catch (NamingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		CamelContext camelContext = new DefaultCamelContext(jndiContext);
+		try {
+			camelContext.addRoutes(new RouteBuilder() {
+				@Override
+				public void configure() throws Exception {
+					from("timer://pollTable"
+							+ "?period=3s")
+                    .setBody(constant("select * from signalement"))
+                    .to("jdbc:dataSource")
+                    .split(simple("${body}"))
+                    .process(new Processor() {
+						
+						public void process(Exchange exchange) throws Exception {
+							Map<String, Object> signalement = exchange.getIn().getBody(Map.class);
+							System.out.println("Process signalement " + signalement);
+							 // send to default destination 
+						    jmsMessageSender.send(signalement); 
+						    // close spring application context
+						    ((ClassPathXmlApplicationContext)ctx).close();
+						}
+					});
+				}
+			});
+			camelContext.start();
+			Thread.sleep(3000);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				camelContext.stop();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			context.close();
+		}
+    
     }
-}
+    }

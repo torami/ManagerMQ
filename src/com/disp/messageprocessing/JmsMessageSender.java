@@ -1,4 +1,4 @@
-package com.disp.demo;
+package com.disp.messageprocessing;
   
 import java.io.Serializable;
 import java.util.Map;

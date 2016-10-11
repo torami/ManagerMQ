@@ -9,9 +9,9 @@ package com.disp.amqm;
 public class Manager {
  
     public static void main(String[] args) throws Exception {
-        thread(new Producer(), false);
+       // thread(new Producer(), false);
         thread(new Consumer(), false);
-        thread(new Consumer(), false);
+       //thread(new Consumer(), false);
         Thread.sleep(1000);
     }
     /**
