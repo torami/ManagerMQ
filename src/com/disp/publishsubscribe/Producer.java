@@ -18,6 +18,8 @@ import org.apache.camel.util.jndi.JndiContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.disp.messageprocessing.Email;
+
 
 
 public class Producer {
@@ -37,13 +39,11 @@ public class Producer {
 		try {
 			jndiContext = new JndiContext();
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		try {
 			jndiContext.bind("dataSource", dataSource);
 		} catch (NamingException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		CamelContext camelContext = new DefaultCamelContext(jndiContext);
@@ -80,6 +80,9 @@ public class Producer {
 							message.setObject((Serializable) signalement);
 					        producer.send(message);
 							System.out.println("Sent message '" + message.getObject() + "'");
+							 // Send an email to the administration
+						    Email mail = new Email();
+						    mail.SendMyEmail("reporter.bergerlevrault@gmail.com","Snoopy12","rami.torkhani@gmail.com", " Nouvelle Réclamation");
 							connection.close();
 
 
@@ -90,13 +93,11 @@ public class Producer {
 			camelContext.start();
 			Thread.sleep(3000);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			try {
 				camelContext.stop();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			context.close();
